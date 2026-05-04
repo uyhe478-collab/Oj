@@ -1,0 +1,59 @@
+-- [[ HAPPY FINGER EXECUTOR ]] --
+local player = game.Players.LocalPlayer
+local mouse = player:GetMouse()
+local character = player.Character or player.CharacterAdded:Wait()
+local hum = character:WaitForChild("Humanoid")
+
+-- 1. ฟังก์ชันสร้างเสียง Happy/Funny ตอนยิง
+local function playHappySound()
+    local sound = Instance.new("Sound", character:WaitForChild("Head"))
+    sound.SoundId = "rbxassetid://6831003424" -- เสียงแนวตลก/บันเทิง (เปลี่ยน ID ได้)
+    sound.Volume = 2
+    sound:Play()
+    game.Debris:AddItem(sound, 2)
+end
+
+-- 2. ระบบยกนิ้วยิง (Click to Kill)
+mouse.Button1Down:Connect(function()
+    -- เล่นท่าทางยกนิ้ว (ใช้ท่า Point หรือท่าทางกวนๆ)
+    local anim = Instance.new("Animation")
+    anim.AnimationId = "rbxassetid://507770453" -- ท่าทางยกแขน/ชี้ (Point)
+    local loadAnim = hum:LoadAnimation(anim)
+    loadAnim:Play()
+    
+    -- เล่นเสียง
+    playHappySound()
+
+    -- เช็คเป้าหมายที่โดนนิ้วชี้
+    local target = mouse.Target
+    if target and target.Parent:FindFirstChild("Humanoid") then
+        local enemyHum = target.Parent.Humanoid
+        local enemyRoot = target.Parent:FindFirstChild("HumanoidRootPart")
+        
+        -- ทำให้ตายแบบบันเทิง (ตัวแตกหรือหายไป)
+        enemyHum.Health = 0
+        
+        if enemyRoot then
+            -- เอฟเฟกต์หัวใจหรือประกายไฟ (แทนที่ออร่ามืด)
+            local attachment = Instance.new("Attachment", enemyRoot)
+            local particles = Instance.new("ParticleEmitter", attachment)
+            particles.Texture = "rbxassetid://243098098" -- เปลี่ยนเป็นรูปหัวใจหรือดาวได้
+            particles.Color = ColorSequence.new(Color3.fromRGB(255, 255, 0)) -- สีเหลืองสดใส
+            particles.Rate = 100
+            particles.Speed = NumberRange.new(10)
+            particles.Lifetime = NumberRange.new(0.5)
+            
+            game.Debris:AddItem(attachment, 1)
+        end
+    end
+    
+    -- รอแป๊บหนึ่งแล้วเอาแขนลง
+    task.wait(0.5)
+    loadAnim:Stop()
+end)
+
+-- 3. ระบบอมตะ (God Mode)
+hum.MaxHealth = math.huge
+hum.Health = math.huge
+
+print("Happy Finger Ready! ยกนิ้วชี้พิพากษาแบบบันเทิง!")
