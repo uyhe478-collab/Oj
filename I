@@ -1,0 +1,58 @@
+-- [[ FINGER GUN EXECUTOR: HEAVY EDITION ]] --
+local player = game.Players.LocalPlayer
+local mouse = player:GetMouse()
+local character = player.Character or player.CharacterAdded:Wait()
+local hum = character:WaitForChild("Humanoid")
+
+-- 1. ฟังก์ชันสั่งตาย (Force Kill)
+local function killTarget(targetChar)
+    if targetChar:FindFirstChild("Humanoid") then
+        -- สั่งเลือด 0 แบบ Force
+        targetChar.Humanoid.Health = 0
+        
+        -- สร้างเอฟเฟกต์ระเบิดที่ตัว (แบบบันเทิง)
+        local root = targetChar:FindFirstChild("HumanoidRootPart")
+        if root then
+            local exp = Instance.new("Explosion")
+            exp.Position = root.Position
+            exp.BlastRadius = 0 -- ไม่ให้คนรอบข้างโดน
+            exp.Parent = workspace
+            
+            -- เสียง POW! (ถ้ามี ID เสียงตลกๆ ใส่ตรงนี้ได้)
+            local s = Instance.new("Sound", root)
+            s.SoundId = "rbxassetid://12222084" -- เสียงระเบิดคลาสสิก
+            s:Play()
+        end
+    end
+end
+
+-- 2. ระบบยกนิ้วยิง (เล็งค้างนิดนึงแล้วตาย)
+mouse.Button1Down:Connect(function()
+    local target = mouse.Target
+    if target and target.Parent:FindFirstChild("Humanoid") then
+        local targetChar = target.Parent
+        
+        -- เล่นท่าทางยกนิ้ว (เล็ง)
+        local anim = Instance.new("Animation")
+        anim.AnimationId = "rbxassetid://507770453" -- ท่าชี้
+        local loadAnim = hum:LoadAnimation(anim)
+        loadAnim:Play()
+        
+        -- ค้างไว้ 0.8 วินาที (ให้คนโดนยิงได้ตกใจเหมือน Heavy)
+        task.wait(0.8)
+        
+        -- ยิง!
+        killTarget(targetChar)
+        print("POW! " .. targetChar.Name .. " Is Dead!")
+        
+        -- รอท่าทางจบ
+        task.wait(0.5)
+        loadAnim:Stop()
+    end
+end)
+
+-- 3. อมตะ (God Mode) กันโดนสวน
+hum.MaxHealth = math.huge
+hum.Health = math.huge
+
+print("Heavy Finger Fixed! คลิกที่ตัวคนเพื่อสั่งตาย (เล็ง 0.8 วิ)!")
