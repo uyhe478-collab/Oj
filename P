@@ -1,0 +1,79 @@
+-- [[ HAPPY FINGER: POW & KNOCKBACK EDITION ]] --
+local player = game.Players.LocalPlayer
+local mouse = player:GetMouse()
+local character = player.Character or player.CharacterAdded:Wait()
+local hum = character:WaitForChild("Humanoid")
+
+-- 1. ฟังก์ชันสร้างเสียง "POW!" (Happy Sound)
+local function playPowSound(location)
+    local sound = Instance.new("Sound")
+    -- ใช้ ID เสียงที่มีความดังและกระชับคล้ายคำว่า POW!
+    sound.SoundId = "rbxassetid://130113322" -- เสียง "Boom" สั้นๆ ที่ฟังดูบันเทิง
+    sound.Volume = 3
+    sound.Parent = location
+    sound:Play()
+    game.Debris:AddItem(sound, 2)
+end
+
+-- 2. ฟังก์ชันสั่งกระเด็น 100 เมตร (Super Knockback)
+local function applyKnockback(targetChar)
+    local targetRoot = targetChar:FindFirstChild("HumanoidRootPart")
+    local targetHum = targetChar:FindFirstChild("Humanoid")
+    
+    if targetRoot and targetHum then
+        targetHum.PlatformStand = true -- ทำให้ตัวอ่อน
+        
+        -- สร้างแรงผลักมหาศาล
+        local velocity = Instance.new("BodyVelocity")
+        velocity.MaxForce = Vector3.new(1, 1, 1) * math.huge
+        
+        -- ทิศทางจากตัวเราไปหาเป้าหมาย (ดีดขึ้นฟ้านิดๆ)
+        local direction = (targetRoot.Position - character.HumanoidRootPart.Position).Unit
+        velocity.Velocity = (direction + Vector3.new(0, 0.6, 0)) * 600 -- ความแรง 600 = กระเด็นไกลมาก
+        
+        velocity.Parent = targetRoot
+        game.Debris:AddItem(velocity, 0.5) -- ผลักแค่ครึ่งวินาทีพอ
+        
+        -- เอฟเฟกต์ระเบิดกระจาย (ไม่มีดาเมจคนรอบข้าง)
+        local exp = Instance.new("Explosion")
+        exp.Position = targetRoot.Position
+        exp.BlastRadius = 0
+        exp.Parent = workspace
+
+        -- ทำให้เขากลับมายืนได้หลังกระเด็นเสร็จ (ถ้าไม่ตกแมพ)
+        task.delay(5, function()
+            if targetHum then targetHum.PlatformStand = false end
+        end)
+    end
+end
+
+-- 3. ระบบคลิกยิง
+mouse.Button1Down:Connect(function()
+    local target = mouse.Target
+    if target and target.Parent:FindFirstChild("Humanoid") then
+        local targetChar = target.Parent
+        
+        -- [Step 1] ยกนิ้วขึ้นเล็ง (ค้างไว้ให้ศัตรูตกใจ)
+        local anim = Instance.new("Animation")
+        anim.AnimationId = "rbxassetid://507770453" -- ท่าชี้
+        local loadAnim = hum:LoadAnimation(anim)
+        loadAnim:Play()
+        
+        task.wait(0.6) -- จังหวะเล็ง
+        
+        -- [Step 2] ยิงพร้อมเสียง "พาว!"
+        playPowSound(character.Head) -- เสียงออกที่หัวเรา
+        applyKnockback(targetChar) -- เป้าหมายกระเด็น
+        
+        print("POW! HAPPY!")
+        
+        task.wait(0.3)
+        loadAnim:Stop()
+    end
+end)
+
+-- 4. ระบบอมตะ (God Mode)
+hum.MaxHealth = math.huge
+hum.Health = math.huge
+
+print("Happy Finger 'POW' Ready! คลิกยิงคนให้ปลิวได้เลย!")
